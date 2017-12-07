@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.GoodsMapper" >
+  <resultMap id="BaseResultMap" type="com.qinzhi.domain.Goods">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+    <result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
+    <result column="goods_brand" jdbcType="VARCHAR" property="goodsBrand" />
+    <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+    <result column="goods_date" jdbcType="TIMESTAMP" property="goodsDate" />
+    <result column="goods_place" jdbcType="VARCHAR" property="goodsPlace" />
+    <result column="goods_address" jdbcType="VARCHAR" property="goodsAddress" />
+    <result column="goods_count" jdbcType="INTEGER" property="goodsCount" />
+    <result column="goods_desc" jdbcType="VARCHAR" property="goodsDesc" />
+    <result column="goods_image" jdbcType="VARCHAR" property="goodsImage" />
+    <result column="goods_code" jdbcType="VARCHAR" property="goodsCode" />
+    <result column="goods_is_send" jdbcType="INTEGER" property="goodsIsSend" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    id, operator_id, goods_name, goods_brand, goods_price, goods_date, goods_place,goods_address, goods_count, 
+    goods_image,goods_desc,goods_code,goods_is_send
+  </sql>
+  <delete id="delete" parameterType="java.lang.Long">
+    delete from goods
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="save" parameterType="com.qinzhi.domain.Goods"  useGeneratedKeys="true" keyProperty="id">
+    insert into goods (operator_id, goods_name, 
+      goods_brand, goods_price, goods_date, 
+      goods_place,goods_address, goods_count, goods_image, 
+      goods_desc,goods_code)
+    values ( #{operatorId,jdbcType=BIGINT}, #{goodsName,jdbcType=VARCHAR}, 
+      #{goodsBrand,jdbcType=VARCHAR}, #{goodsPrice,jdbcType=DECIMAL}, #{goodsDate,jdbcType=TIMESTAMP}, 
+      #{goodsPlace,jdbcType=VARCHAR},#{goodsAddress,jdbcType=VARCHAR},  #{goodsCount,jdbcType=INTEGER}, #{goodsImage,jdbcType=VARCHAR}, 
+      #{goodsDesc,jdbcType=VARCHAR},#{goodsCode,jdbcType=VARCHAR})
+  </insert>
+  
+  <update id="update" parameterType="com.qinzhi.domain.Goods">
+    update goods
+    set operator_id = #{operatorId,jdbcType=BIGINT},
+      goods_name = #{goodsName,jdbcType=VARCHAR},
+      goods_brand = #{goodsBrand,jdbcType=VARCHAR},
+      goods_price = #{goodsPrice,jdbcType=DECIMAL},
+      goods_date = #{goodsDate,jdbcType=TIMESTAMP},
+      goods_place = #{goodsPlace,jdbcType=VARCHAR},
+      goods_address =#{goodsAddress,jdbcType=VARCHAR},
+      goods_count = #{goodsCount,jdbcType=INTEGER},
+      goods_image = #{goodsImage,jdbcType=VARCHAR},
+      goods_code = #{goodsCode,jdbcType=VARCHAR},
+      goods_is_send = #{goodsIsSend,jdbcType=INTEGER}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+ <sql id="where_condition">
+   <where>
+            <if test="goodsName!=null and goodsName!=''">
+                and  goods_name like '%${goodsName}%'
+            </if>
+            <if test="goodsBrand!=null and goodsBrand !=''">
+                and  goods_brand like '%${goodsBrand}%'
+            </if>
+            <if test="operatorId !=null and operatorId !=''">
+                and  operator_id = #{operatorId}
+            </if>
+            <if test="goodsCode !=null and goodsCode !=''">
+                and  goods_code = #{goodsCode}
+            </if>
+           <if test="goodsIsSend !=null">
+               and  goods_is_send = #{goodsIsSend}
+           </if>
+   </where>
+ </sql>
+ 
+    <select id="findGoodsList" resultMap="BaseResultMap" parameterType="com.qinzhi.domain.Goods">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        goods
+        <include refid="where_condition"/>
+        order by id desc
+        limit #{start} , #{rows}
+    </select>
+   
+    
+    <select id="getGoodsCount" resultType="java.lang.Integer" parameterType="com.qinzhi.domain.Goods">
+        select count(*) from
+        goods
+        <include refid="where_condition"/>
+    </select>
+    
+        <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select *
+        from
+        goods
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+  
+</mapper>

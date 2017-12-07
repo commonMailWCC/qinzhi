@@ -1,0 +1,85 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    font-size: 12px;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    font-family: verdana, helvetica, arial, sans-serif;
+    padding: 15px;
+    font-size: 12px;
+    margin: 0;
+}
+
+h2 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 15px;
+}
+
+.demo-info {
+    padding: 0 0 12px 0;
+}
+
+.demo-tip {
+    display: none;
+}
+
+.query-div {
+    /*padding:3px;position: absolute;*/
+    padding: 3px;
+    /*position: absolute;*/
+}
+
+#pagination-div {
+    /*position: absolute;*/
+    top: 32px;
+    left: 4px;
+}
+
+#pagination-div table {
+    /*height: 438px;*/
+}
+
+#dg {
+    height: 100%;
+}
+
+#fm {
+    margin: 0;
+    padding: 10px 30px;
+}
+
+.ftitle {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+    margin-bottom: 8px;
+}
+
+.fitem label {
+    display: inline-block;
+    width: 80px;
+}
+
+.fitem input {
+    width: 160px;
+}
+.color_red {
+	color:red;
+}
+
+.queryId {
+    width:100px;
+}
+

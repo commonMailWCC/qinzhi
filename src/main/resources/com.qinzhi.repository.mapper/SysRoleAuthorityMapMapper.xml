@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.SysRoleAuthorityMapMapper">
+    <resultMap id="BaseResultMap" type="com.qinzhi.domain.SysRoleAuthorityMap">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <association property="sysRole" javaType="sysRole">
+            <id column="role_id" property="roleId"/>
+        </association>
+        <association property="sysAuthority" javaType="sysAuthority">
+            <id column="authority_id" property="authorityId"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, role_id, authority_id
+  </sql>
+
+    <sql id="tableName">sys_role_authority_map</sql>
+    <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where
+        id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+    <select id="findByRoleId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where
+        role_id = #{roleId,jdbcType=BIGINT}
+    </select>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where
+        id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteRoleAuthorityMapByRoleId" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where
+        role_id = #{roleId,jdbcType=BIGINT}
+    </delete>
+
+
+    <insert id="save" parameterType="sysRoleAuthorityMap" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        <include refid="tableName"/>
+        (
+        role_id, authority_id
+        )
+        values
+        (
+        #{sysRole.roleId,jdbcType=BIGINT}, #{sysAuthority.authorityId,jdbcType=BIGINT}
+        )
+    </insert>
+    <!-- 批量保存角色与权限之间的关系 -->
+    <insert id="saveBatchRoleAuthority" parameterType="map">
+        insert into<include refid="tableName"/>(role_id, authority_id) values
+        <foreach collection="authorityIds" separator="," item="authorityId">
+            (#{roleId},#{authorityId})
+        </foreach>
+    </insert>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        <include refid="tableName"/>
+    </select>
+
+    <update id="update" parameterType="sysRoleAuthorityMap">
+        update
+        <include refid="tableName"/>
+        set
+        role_id = #{sysRole.roleId,jdbcType=BIGINT},
+        authority_id = #{sysAuthority.authorityId,jdbcType=BIGINT}
+        where
+        id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

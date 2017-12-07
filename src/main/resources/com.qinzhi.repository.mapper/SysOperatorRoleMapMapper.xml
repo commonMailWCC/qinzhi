@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.SysOperatorRoleMapMapper">
+    <resultMap id="BaseResultMap" type="com.qinzhi.domain.SysOperatorRoleMap">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <association property="sysOperator" javaType="sysOperator">
+            <id column="operator_id" property="operatorId"/>
+        </association>
+        <association property="sysRole" javaType="sysRole">
+            <id column="role_id" property="roleId"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, operator_id, role_id
+  </sql>
+    <sql id="tableName">sys_operator_role_map</sql>
+
+    <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where
+        id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="findByOperatorId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where
+        operator_id = #{operatorId,jdbcType=BIGINT}
+    </select>
+    <select id="getOperatorRoleMapByRoleId" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where
+        operator_id = #{operatorId,jdbcType=BIGINT}
+        and role_id =#{roleId,jdbcType=BIGINT}
+    </select>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where
+        id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteOperatorRoleMapByOperatorId" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where
+        operator_id = #{operatorId}
+    </delete>
+
+    <delete id="deleteByOperatorIds" parameterType="java.lang.String">
+        delete from
+        <include refid="tableName"/>
+        where
+        operator_id in
+        <foreach collection="ids" close=")" open="(" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="save" parameterType="sysOperatorRoleMap" keyProperty="id" useGeneratedKeys="true">
+        insert into
+        <include refid="tableName"/>
+        (
+        operator_id, role_id
+        )
+        values
+        (
+        #{sysOperator.operatorId,jdbcType=BIGINT}, #{sysRole.roleId,jdbcType=BIGINT}
+        )
+    </insert>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        <include refid="tableName"/>
+    </select>
+
+    <update id="update" parameterType="sysOperatorRoleMap">
+        update
+        <include refid="tableName"/>
+        set
+        operator_id = #{sysOperator.operatorId,jdbcType=BIGINT},
+        role_id = #{sysRole.roleId,jdbcType=BIGINT}
+        where
+        id = #{id,jdbcType=BIGINT}
+    </update>
+    
+    <select id="findRoleIdByOperatorId" parameterType="map" resultType="java.lang.Long">
+        select role_id from <include refid="tableName"/>
+        where operator_id = #{operatorId}
+    </select>
+</mapper>

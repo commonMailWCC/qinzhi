@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.SysRoleMapper">
+    <resultMap id="BaseResultMap" type="com.qinzhi.domain.SysRole">
+        <id column="role_id" property="roleId" jdbcType="BIGINT"/>
+        <result column="role_name" property="roleName" jdbcType="VARCHAR"/>
+        <result column="role_desc" property="roleDesc" jdbcType="VARCHAR"/>
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+  <sql id="Base_Column_List">
+    role_id, role_name,role_desc,create_date
+  </sql>
+    <sql id="tableName">sys_role</sql>
+    <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where role_id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="findByOperatorId" resultMap="BaseResultMap" parameterType="map">
+        select
+        r.role_id as role_id , r.role_name as role_name
+        from
+        sys_operator_role_map map
+        left outer join
+        <include refid="tableName"/>
+        r on map.role_id = r.role_id
+        where
+        map.operator_id = #{operatorId}
+    </select>
+
+    <select id="findRoles" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        <where>
+            <if test="roleName!=null and roleName!=''">
+                role_name like '%${roleName}%'
+            </if>
+        </where>
+        order by role_id desc
+        limit #{currentPage} , #{pageSize}
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        order by role_id desc
+    </select>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where role_id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="save" parameterType="sysRole" useGeneratedKeys="true" keyProperty="roleId">
+        insert into
+        <include refid="tableName"/>
+        (role_name,role_desc,create_date)
+        values (#{roleName,jdbcType=VARCHAR},#{roleDesc,jdbcType=VARCHAR},#{createDate,jdbcType=TIMESTAMP})
+    </insert>
+
+    <select id="getCount" parameterType="sysRole" resultType="java.lang.Integer">
+        select count(*) from
+        <include refid="tableName"/>
+    </select>
+
+    <select id="getCountByCondition" parameterType="sysRole" resultType="java.lang.Integer">
+        select count(1) from
+        <include refid="tableName"/>
+        <where>
+            <if test="roleName!=null and roleName!=''">
+                role_name like '%${roleName}%'
+            </if>
+        </where>
+    </select>
+
+    <update id="update" parameterType="sysRole">
+        update
+        <include refid="tableName"/>
+        set role_name = #{roleName,jdbcType=VARCHAR},
+        role_desc = #{roleDesc,jdbcType=VARCHAR}
+        where role_id = #{roleId,jdbcType=BIGINT}
+    </update>
+
+    <select id="getRoleLastId" resultType="java.lang.Integer">
+        select max(role_id)+1 from
+        <include refid="tableName"/>
+        for update
+    </select>
+
+    <delete id="deleteRole" parameterType="java.util.List">
+        delete from
+        <include refid="tableName"/>
+        where
+        role_id in
+        <foreach collection="ids" close=")" open="(" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

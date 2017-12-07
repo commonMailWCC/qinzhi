@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.SysAuthorityMapper">
+    <resultMap id="BaseResultMap" type="com.qinzhi.domain.SysAuthority">
+        <id column="authority_id" jdbcType="BIGINT" property="authorityId"/>
+        <result column="authority_code" jdbcType="VARCHAR" property="authorityCode"/>
+        <result column="authority_name" jdbcType="VARCHAR" property="authorityName"/>
+        <result column="authority_desc" jdbcType="VARCHAR" property="authorityDesc"/>
+        <result column="authority_fid" jdbcType="BIGINT" property="authorityFid"/>
+        <result column="authority_order" jdbcType="BIGINT" property="authorityOrder"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    authority_id, authority_code, authority_name,authority_desc,authority_fid,authority_order
+  </sql>
+    <sql id="tableName">sys_authority</sql>
+    <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where
+        authority_id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="findAuthoritys" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        order by authority_id desc
+        limit #{currentPage} , #{pageSize}
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        order by authority_order
+    </select>
+    <select id="findByRoleIds" resultMap="BaseResultMap" parameterType="map">
+        select
+        a.authority_id as authority_id, a.authority_code as authority_code,
+        a.authority_name as authority_name, a.authority_desc as authority_desc
+        from
+        sys_role_authority_map map
+        left outer join
+        <include refid="tableName"/>
+        a on map.authority_id = a.authority_id
+        <where>
+            map.role_id in
+            <foreach collection="roleIds" close=")" open="(" separator="," item="id">
+                #{id}
+            </foreach>
+        </where>
+        order by a.authority_id
+    </select>
+
+    <select id="findByOperatorId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        a.authority_id as authority_id, a.authority_code as authority_code,
+        a.authority_name as authority_name, a.authority_desc as authority_desc
+        from
+        sys_operator p
+        left join sys_operator_role_map role_map on role_map.operator_id = p.operator_id
+        left join sys_role_authority_map auth_map on auth_map.role_id = role_map.role_id
+        left outer join
+        <include refid="tableName"/>
+        a on a.authority_id = auth_map.authority_id
+        where p.operator_id = #{operatorId, jdbcType=BIGINT}
+    </select>
+
+    <select id="getCountByName" parameterType="map" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        <include refid="tableName"/>
+        <where>
+            <if test="name != null and name !=''">
+                authority_name like '%${name}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(*) from
+        <include refid="tableName"/>
+    </select>
+
+    <insert id="save" parameterType="sysAuthority" useGeneratedKeys="true" keyProperty="authorityId">
+        insert into
+        <include refid="tableName"/>
+        (
+        authority_code, authority_name,authority_desc,authority_fid,authority_order
+        )
+        values
+        (
+        #{authorityCode,jdbcType=VARCHAR},
+        #{authorityName,jdbcType=VARCHAR},#{authorityDesc,jdbcType=VARCHAR},#{authorityFid,jdbcType=BIGINT},#{authorityOrder}
+        )
+    </insert>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where
+        authority_id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <update id="update" parameterType="sysAuthority">
+        update
+        <include refid="tableName"/>
+        set
+        authority_code = #{authorityCode,jdbcType=VARCHAR},
+        authority_name = #{authorityName,jdbcType=VARCHAR},
+        authority_desc = #{authorityDesc,jdbcType=VARCHAR},
+        authority_fid = #{authorityFid,jdbcType=BIGINT},
+        authority_order = #{authorityOrder,jdbcType=BIGINT}
+        where
+        authority_id = #{authorityId,jdbcType=BIGINT}
+    </update>
+
+    <select id="findAuthoritiesByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        <where>
+            authority_fid=#{parentId}
+        </where>
+    </select>
+
+    <delete id="deleteByIds" parameterType="java.util.List">
+        delete from
+        <include refid="tableName"/>
+        where
+        authority_id in
+        <foreach collection="ids" close=")" open="(" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findAuthorityByParentId" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        <where>
+            authority_fid=#{parentId}
+        </where>
+        order by authority_id desc
+        limit #{currentPage} , #{pageSize}
+    </select>
+</mapper>

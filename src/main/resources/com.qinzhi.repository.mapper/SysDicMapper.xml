@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.SysDicMapper">
+	<resultMap id="BaseResultMap" type="com.qinzhi.domain.SysDic">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="dic_type" property="dicType" jdbcType="VARCHAR" />
+		<result column="dic_key" property="dicKey" jdbcType="VARCHAR" />
+		<result column="dic_value" property="dicValue" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, dic_key,dic_type,dic_value
+	</sql>
+	<sql id="tableName">sys_dic</sql>
+	
+	
+	
+	<select id="findSysDicsByType"  resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from
+		sys_dic
+		where 1=1 
+		<if test="dicType!=null and dicType!=''">
+		and	dic_type = '${dicType}'
+		</if>
+	</select>
+	
+	<select id="findSysDics"  resultMap="BaseResultMap" parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from
+		sys_dic
+		where 1=1 
+		<if test="dicType!=null and dicType!=''">
+		and	dic_type = '${dicType}'
+		</if>
+		order by dic_type desc
+		limit #{currentPage} , #{pageSize}
+	</select>
+	
+	<insert id="save" parameterType="sysDic" >
+		insert into
+		<include refid="tableName" />
+		(dic_type,dic_key,dic_value)
+		values
+		(#{dicType,jdbcType=VARCHAR},#{dicKey,jdbcType=VARCHAR},#{dicValue,jdbcType=VARCHAR})
+	</insert>
+
+	<select id="getCountByType"  resultType="java.lang.Integer" parameterType="java.lang.String">
+		select count(*) from
+		<include refid="tableName" />
+		<if test="dicType !=null and dicType !=''">
+			where dic_type = #{dicType,jdbcType=VARCHAR}
+		</if>
+
+	</select>
+	<update id="update" parameterType="sysDic">
+		update
+		<include refid="tableName" />
+		set dic_type = #{dicType,jdbcType=VARCHAR},
+		dic_key = #{dicKey,jdbcType=VARCHAR},
+		dic_value = #{dicValue,jdbcType=VARCHAR}
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="deleteSysDic" parameterType="java.util.List">
+		delete from
+		<include refid="tableName" />
+		where
+		id in
+		<foreach collection="ids" close=")" open="(" separator=","
+			item="id">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<select id="getSysDicValueByKey" parameterType="map" resultType="java.lang.String">
+	    select dic_value from sys_dic where dic_key = #{key}
+	</select>
+    
+    <select id="getSysDicByKeyAndType" resultMap="BaseResultMap" parameterType="map">
+	   select
+		<include refid="Base_Column_List" />
+		from
+		sys_dic
+		where 1=1 
+		<if test="dicType!=null and dicType!=''">
+		and	dic_type = #{dicType}
+		</if>
+		<if test="dicKey!=null and dicKey!=''">
+		and	dic_key = #{dicKey}
+		</if>
+		limit 1
+	</select>
+</mapper>

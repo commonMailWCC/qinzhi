@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.LevelMapper" >
+  <resultMap id="BaseResultMap" type="com.qinzhi.domain.Level" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="level_name" property="levelName" jdbcType="VARCHAR" />
+    <result column="level_image" property="levelImage" jdbcType="VARCHAR" />
+    <result column="level_welfare" property="levelWelfare" jdbcType="VARCHAR" />
+    <result column="level_desc" property="levelDesc" jdbcType="VARCHAR" />
+    <result column="level_limit" property="levelLimit" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, level_name, level_image, level_welfare, level_desc ,level_limit
+  </sql>
+  
+   <select id="findAll" resultMap="BaseResultMap"   >
+    select 
+    <include refid="Base_Column_List" />
+    from level
+  </select>
+  
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from level
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="delete" parameterType="java.lang.Long" >
+    delete from level
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="save" parameterType="com.qinzhi.domain.Level"  useGeneratedKeys="true" keyProperty="id" >
+    insert into level (level_name, level_image, 
+      level_welfare, level_desc, level_limit)
+    values (#{levelName,jdbcType=VARCHAR}, #{levelImage,jdbcType=VARCHAR}, 
+      #{levelWelfare,jdbcType=VARCHAR}, #{levelDesc,jdbcType=VARCHAR}, #{levelLimit,jdbcType=VARCHAR})
+  </insert>
+   
+  <update id="update" parameterType="com.qinzhi.domain.Level" >
+    update level
+    set level_name = #{levelName,jdbcType=VARCHAR},
+      level_image = #{levelImage,jdbcType=VARCHAR},
+      level_welfare = #{levelWelfare,jdbcType=VARCHAR},
+      level_desc = #{levelDesc,jdbcType=VARCHAR},
+      level_limit = #{levelLimit,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

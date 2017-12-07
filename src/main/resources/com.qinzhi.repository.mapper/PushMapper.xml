@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.PushMapper">
+	<resultMap id="BaseResultMap" type="com.qinzhi.domain.Push">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="platform" property="platform" jdbcType="VARCHAR" />
+		<result column="target" property="target" jdbcType="VARCHAR" />
+		<result column="target_desc" property="targetDesc" jdbcType="VARCHAR" />
+		<result column="send_time" property="sendTime" jdbcType="INTEGER" />
+		<result column="send_desc" property="sendDesc" jdbcType="VARCHAR" />
+		<result column="constant_speed" property="constantSpeed" jdbcType="INTEGER" />
+		<result column="constant_desc" property="constantDesc" jdbcType="INTEGER" />
+		<result column="message" property="message" jdbcType="VARCHAR" />	
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, platform, target, target_desc, send_time, send_desc,
+		constant_speed,
+		constant_desc,
+		message,
+		create_time
+	</sql>
+
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from push
+		where id =
+		#{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="save" parameterType="com.qinzhi.domain.Push"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into push (platform,
+		target,
+		target_desc, send_time, send_desc,
+		constant_speed,
+		constant_desc,
+		message,create_time)
+		values ( #{platform,jdbcType=VARCHAR},
+		#{target,jdbcType=VARCHAR},
+		#{targetDesc,jdbcType=VARCHAR},
+		#{sendTime,jdbcType=INTEGER}, #{sendDesc,jdbcType=VARCHAR},
+		#{constantSpeed,jdbcType=INTEGER}, #{constantDesc,jdbcType=INTEGER}, 
+		#{message,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+	</insert>
+
+	<select id="findPushList" resultMap="BaseResultMap"
+		parameterType="com.qinzhi.domain.Push">
+		select
+		<include refid="Base_Column_List" />
+		from
+		push
+		<include refid="where_condition" />
+		order by id desc
+		limit #{start} , #{rows}
+	</select>
+	
+	<select id="getPushCount" resultType="java.lang.Integer"
+		parameterType="com.qinzhi.domain.Push">
+		select count(*) from
+		push
+		<include refid="where_condition" />
+	</select>
+
+	<sql id="where_condition">
+		<where>
+			 <if test="platform !=null and platform!=''">
+                and  platform like '%${platform}%'
+            </if>
+		</where>
+	</sql>
+</mapper>

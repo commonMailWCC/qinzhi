@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.PunchlogMapper">
+	<resultMap id="BaseResultMap" type="com.qinzhi.domain.Punchlog">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="user_id" property="userId" jdbcType="BIGINT" />
+		<result column="goods_id" property="goodsId" jdbcType="BIGINT" />
+		<result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
+	    <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+	    <result column="goods_date" jdbcType="TIMESTAMP" property="goodsDate" />
+	    <result column="goods_place" jdbcType="VARCHAR" property="goodsPlace" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, user_id, goods_id , goods_name, goods_price, goods_date, goods_place
+	</sql>
+
+	<select id="findPunchlogList" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from punchlog
+		where user_id = #{userId,jdbcType=BIGINT}
+		and goods_id = #{goodsId,jdbcType=BIGINT}
+	</select>
+
+
+	<insert id="save" parameterType="com.qinzhi.domain.Punchlog"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into punchlog
+		(user_id,
+		goods_id, goods_name, 
+        goods_price, goods_date, 
+        goods_place)
+		values (#{userId,jdbcType=BIGINT},
+		#{goodsId,jdbcType=BIGINT}, #{goodsName,jdbcType=VARCHAR}, 
+        #{goodsPrice,jdbcType=DECIMAL}, #{goodsDate,jdbcType=TIMESTAMP}, 
+        #{goodsPlace,jdbcType=VARCHAR})
+	</insert>
+    
+      <select id="findList" resultMap="BaseResultMap" parameterType="com.qinzhi.domain.Punchlog">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        punchlog
+        <include refid="where_condition"/>
+        order by id desc
+        limit #{start} , #{rows}
+    </select>
+   
+    
+    <select id="getCount" resultType="java.lang.Integer" parameterType="com.qinzhi.domain.Punchlog">
+        select count(*) from
+        punchlog 
+        <include refid="where_condition"/>
+    </select>
+
+	<sql id="where_condition">
+		<where>
+			<if test="goodsName!=null and goodsName!=''">
+				and goods_name like '%${goodsName}%'
+			</if>
+			<if test="userId !=null and userId !=''">
+				and user_id = #{userId}
+			</if>
+			<if test="goodsId !=null and goodsId !=''">
+				and goods_id = #{goodsId}
+			</if>
+		</where>
+	</sql>
+    
+</mapper>                                                                                           

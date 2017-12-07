@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qinzhi.repository.mapper.SysOperatorMapper">
+    <resultMap id="BaseResultMap" type="com.qinzhi.domain.SysOperator">
+        <id column="operator_id" property="operatorId" jdbcType="BIGINT"/>
+        <result column="operator_email" property="operatorEmail" jdbcType="VARCHAR"/>
+        <result column="operator_login_name" property="operatorLoginName" jdbcType="VARCHAR"/>
+        <result column="operator_password" property="operatorPassword" jdbcType="VARCHAR"/>
+        <result column="operator_state" property="operatorState" jdbcType="INTEGER"/>
+        <result column="operator_name" property="operatorName" jdbcType="VARCHAR"/>
+        <result column="salt" property="salt" jdbcType="VARCHAR"/>
+        <result column="sale_goods" property="saleGoods" jdbcType="VARCHAR"/>
+        <result column="operator_contact" property="operatorContact" jdbcType="VARCHAR"/>
+        <result column="operator_level" property="operatorLevel" jdbcType="VARCHAR"/>
+         <result column="level_id" property="levelId" jdbcType="BIGINT"/>
+        <result column="operator_qq" property="operatorQq" jdbcType="VARCHAR"/>
+        <result column="operator_province" property="operatorProvince" jdbcType="VARCHAR"/>
+        <result column="operator_city" property="operatorCity" jdbcType="VARCHAR"/>
+        <result column="operator_region" property="operatorRegion" jdbcType="VARCHAR"/>
+        <result column="operator_address" property="operatorAddress" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    operator_id, operator_email, operator_login_name, operator_password, operator_state,operator_name,salt,sale_goods,
+    operator_contact,operator_level,operator_qq,operator_province,operator_city,operator_region,operator_address,level_id,gender
+  </sql>
+ 
+ <sql id="where_condition">
+   <where>
+            operator_state in(1,0)
+             <if test="operatorId!=null and operatorId !=''">
+               and operator_id = #{operatorId,jdbcType=BIGINT}
+            </if>
+            <if test="levelId !=null and levelId !=''">
+               and level_id = #{levelId}
+            </if>
+            <if test="operatorName!=null and operatorName!=''">
+               and operator_name like '%${operatorName}%'
+            </if>
+            <if test="operatorLoginName!=null and operatorLoginName!=''">
+                and operator_login_name like '%${operatorLoginName}%'
+            </if>
+            <if test="saleGoods!=null and saleGoods!=''">
+                and sale_goods like '%${saleGoods}%'
+            </if>
+            <if test="operatorContact!=null and operatorContact!=''">
+                and operator_contact like '%${operatorContact}%'
+            </if>   
+   </where>
+ </sql>
+ 
+    <sql id="tableName">sys_operator</sql>
+
+    <select id="findOperators" resultMap="BaseResultMap" parameterType="sysOperator">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        <include refid="where_condition"/>
+        order by operator_id desc
+        limit #{start} , #{rows}
+    </select>
+   
+    
+    <select id="getCountByName" resultType="java.lang.Integer" parameterType="sysOperator">
+        select count(*) from
+        <include refid="tableName"/>
+        <include refid="where_condition"/>
+    </select>
+    
+    <select id="get" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where operator_id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="findAll" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        order by operator_id desc
+    </select>
+    <select id="getOperatorByLoginName" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where operator_login_name = #{loginName}
+    </select>
+    <select id="getByLoginNameAndState" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="tableName"/>
+        where operator_login_name = #{loginName}
+        and operator_state = #{state}
+    </select>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+        <include refid="tableName"/>
+        where operator_id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="save" parameterType="sysOperator" useGeneratedKeys="true" keyProperty="operatorId">
+        insert into
+        <include refid="tableName"/>
+        ( operator_email, operator_login_name, operator_name,
+        operator_password, operator_state,salt,sale_goods,
+        operator_contact,operator_level,level_id,operator_qq,operator_province,operator_city,operator_region,operator_address,gender)
+        values ( #{operatorEmail,jdbcType=VARCHAR},
+        #{operatorLoginName,jdbcType=VARCHAR},#{operatorName,jdbcType=VARCHAR},
+        #{operatorPassword,jdbcType=VARCHAR}, #{operatorState,jdbcType=INTEGER},#{salt,jdbcType=VARCHAR},
+        #{saleGoods,jdbcType=VARCHAR},#{operatorContact,jdbcType=VARCHAR},#{operatorLevel,jdbcType=VARCHAR},#{levelId,jdbcType=BIGINT}
+        ,#{operatorQq,jdbcType=VARCHAR},
+        #{operatorProvince,jdbcType=VARCHAR},
+        #{operatorCity,jdbcType=VARCHAR},#{operatorRegion,jdbcType=VARCHAR},#{operatorAddress,jdbcType=VARCHAR},#{gender,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(*) from
+        <include refid="tableName"/>
+    </select>
+
+    <update id="update" parameterType="sysOperator">
+        update
+        <include refid="tableName"/>
+        set
+        operator_email = #{operatorEmail,jdbcType=VARCHAR},
+        operator_login_name = #{operatorLoginName,jdbcType=VARCHAR},
+        operator_name = #{operatorName,jdbcType=VARCHAR},
+        operator_password = #{operatorPassword,jdbcType=VARCHAR},
+        operator_state = #{operatorState,jdbcType=INTEGER},
+        salt = #{salt,jdbcType=VARCHAR},
+        operator_contact = #{operatorContact,jdbcType=VARCHAR},
+        sale_goods = #{saleGoods,jdbcType=VARCHAR},
+        operator_level = #{operatorLevel,jdbcType=VARCHAR},
+        level_id = #{levelId,jdbcType=BIGINT},
+        operator_qq = #{operatorQq,jdbcType=VARCHAR},
+        operator_province = #{operatorProvince,jdbcType=VARCHAR},
+        operator_city = #{operatorCity,jdbcType=VARCHAR},
+        operator_region = #{operatorRegion,jdbcType=VARCHAR},
+        operator_address  = #{operatorAddress,jdbcType=VARCHAR},
+        gender  = #{gender,jdbcType=VARCHAR}
+        where
+        operator_id = #{operatorId,jdbcType=BIGINT}
+    </update>
+
+    <select id="getOperatorLastId" resultType="java.lang.Integer">
+        select max(operator_id)+1 from
+        <include refid="tableName"/>
+        for update;
+    </select>
+
+    <delete id="deleteOperator" parameterType="java.lang.String">
+        delete from
+        <include refid="tableName"/>
+        where
+        operator_id in
+        <foreach collection="ids" close=")" open="(" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
