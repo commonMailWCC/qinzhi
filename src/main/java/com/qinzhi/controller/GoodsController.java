@@ -1,4 +1,4 @@
-package com.qinzhi.controller;
+ package com.qinzhi.controller;
 
 import java.io.File;
 import java.io.IOException;
@@ -167,7 +167,7 @@ public class GoodsController {
 		logger.info("文件类型: " + file.getContentType());
 		if (file.isEmpty()) {
 			logger.error("upload image--------------------------------->failed");
-			return "请选择一张图片";
+			return "请选择一张图片"; 
 		}
 		String finalFileName = System.nanoTime()
 				+ getOriginalFilename.substring(getOriginalFilename.lastIndexOf("."), getOriginalFilename.length());
@@ -219,13 +219,13 @@ public class GoodsController {
 			in = excel.getInputStream();
 			Map<String, Object> list = new HashMap<>();
 			list = ExcelUtil.parseGoodsExcel(in, isE2007);
-			String error = (String) list.get("message");
+			String error = (String) list.get("message"); 
 			int i = 0;
 			if ("success".equals(error)) {
 				List<Goods> goodss = (List<Goods>) list.get("goods");
 				if (o.getLevelId() == 1) {
 					Integer limit = Integer.valueOf(level.getLevelLimit());
-					if (limit >= count + goodss.size()) {
+					if (limit <= count + goodss.size()) {
 						result.setStatus(JsonResult.STATUS_FAILED);
 						result.setMessage("导入商品数超过您目前的会员级别,请升级会员级别");
 					}
