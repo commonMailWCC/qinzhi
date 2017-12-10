@@ -168,7 +168,7 @@ public class ExcelUtil {
 		return resultMap;
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation") 
 	public static Map<String, Object> parseGoodsExcel(InputStream in, boolean isE2007) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		String message = "success";
@@ -204,6 +204,9 @@ public class ExcelUtil {
 				// 遍历每一列
 				for (int c = 0; c < cellCount; c++) {
 					Cell cell = row.getCell(c);
+					if ( null ==cell) {
+						continue;
+					}
 					int cellType = cell.getCellType();
 					String cellStringValue = null;
 					switch (cellType) {
@@ -247,6 +250,7 @@ public class ExcelUtil {
 					switch (c) {
 					case 0:
 						goods.setGoodsName(cellStringValue);
+						goods.setGoodsCode(cellStringValue);
 						if (StringUtils.isBlank(cellStringValue)) {
 							message = "解析Excel时发生错误，第[" + (row.getRowNum() + 1) + "]行，第[" + (c + 1) + "]列,商品为空";
 							resultMap.put("message", message);
@@ -254,32 +258,24 @@ public class ExcelUtil {
 						}
 						break;
 					case 1:
-						goods.setGoodsCode(cellStringValue);
-						if (StringUtils.isBlank(cellStringValue)) {
-							message = "解析Excel时发生错误，第[" + (row.getRowNum() + 1) + "]行，第[" + (c + 1) + "]列 密码为空";
-							resultMap.put("message", message);
-							return resultMap;
-						}
-						break;
-					case 2:
 						goods.setGoodsPrice(new BigDecimal(cellStringValue));
 						break;
-					case 3:
+					case 2:
 						goods.setGoodsBrand(cellStringValue);
 						break;
-					case 4:
+					case 3:
 						if (StringUtils.isNotBlank(cellStringValue)) {
 							Date date = parseToDate(cellStringValue);
 							goods.setGoodsDate(date);
 						}
 						break;
-					case 5:
+					case 4:
 						goods.setGoodsDesc(cellStringValue);
 						break;
-					case 6:
+					case 5:
 						goods.setGoodsImage(cellStringValue);
 						break;
-					case 7:
+					case 6:
 						goods.setGoodsAddress(cellStringValue);
 						break;	
 					default:
