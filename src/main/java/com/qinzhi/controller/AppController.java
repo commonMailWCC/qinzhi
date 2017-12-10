@@ -144,6 +144,7 @@ public class AppController {
 			try {
 				userName = state + "," + userName;
 				SysOperator user = systemService.getByLoginNameAndState(userName);
+				password = Digests.getMd5Bit32(password);
 				if (password.equals(user.getOperatorPassword())) {
 					TokenTable t = tokenService.getTokenById(user.getOperatorId());
 					String tokenInfo = Token.getTokenString(session);
@@ -168,7 +169,7 @@ public class AppController {
 					result.setToken(tokenInfo);
 					result.setSuccess(Constants.RESULT_SUCCESS);
 				} else {
-					LOGGER.error("login error: {}", userName+","+password+","+user.getOperatorPassword());
+					LOGGER.error("login error: {}", userName + "," + password + "," + user.getOperatorPassword());
 					message = "登录失败，账号或密码不匹配";
 				}
 			} catch (UnknownAccountException ue) {
@@ -196,7 +197,7 @@ public class AppController {
 	 * @param response
 	 */
 	@RequestMapping(value = "/reset", method = RequestMethod.POST)
-	public void reset(@RequestParam(value = "userName", defaultValue = "") String userName,
+	public void reset(@RequestParam(value = "token", defaultValue = "") String token,
 			@RequestParam(value = "password", defaultValue = "") String password,
 			@RequestParam(value = "newpass", defaultValue = "") String newpass, HttpServletRequest request,
 			HttpServletResponse response) {
@@ -205,7 +206,7 @@ public class AppController {
 		ResultToken result = new ResultToken();
 		result.setSuccess(Constants.RESULT_FAIL);
 		Subject subject = SecurityUtils.getSubject();
-		if (StringUtils.isBlank(userName) || StringUtils.isBlank(password) || StringUtils.isBlank(newpass)) {
+		if (StringUtils.isBlank(token) || StringUtils.isBlank(password) || StringUtils.isBlank(newpass)) {
 			message = "请填写完整信息!";
 			result.setMessage(message);
 			RenderUtil.renderJson(JsonUtils.toJson(result), response);
@@ -213,38 +214,48 @@ public class AppController {
 			try {
 				// 普通用户
 				String state = "2";
-				userName = state + "," + userName;
-				SysOperator user = systemService.getByLoginNameAndState(userName);
-				if (password.equals(user.getOperatorPassword())) {
-					user.setOperatorPassword(newpass);
-					entryptPassword(user);
-					systemService.updateOperator(user);
+				// 验证token
+				ResultMessage checkResult = checkToken(token);
+				// 验证成功
+				if (Constants.RESULT_SUCCESS == checkResult.getSuccess()) {
+					TokenTable table = tokenService.getTokenByToken(token);
+					SysOperator user = systemService.getOperatorById(table.getUserId());
+					password = Digests.getMd5Bit32(password);
+					if (password.equals(user.getOperatorPassword())) {
+						newpass = Digests.getMd5Bit32(newpass);
+						user.setOperatorPassword(newpass);
+						systemService.updateOperator(user);
 
-					// 重新生成token
-					TokenTable t = tokenService.getTokenById(user.getOperatorId());
-					String tokenInfo = Token.getTokenString(session);
-					Calendar c = Calendar.getInstance();
-					c.setTime(new Date()); // 设置当前日期
-					c.add(Calendar.MONTH, 1); // 日期分钟加1,Calendar.DATE(天),Calendar.HOUR(小时)
-					Date invalidTime = c.getTime(); // 结果
-					System.out.println(invalidTime);
-					if (null != t) {
-						t.setUpdateTime(new Date());
-						t.setInvalidTime(invalidTime);
-						t.setUserToken(tokenInfo);
+						// 重新生成token
+						TokenTable t = tokenService.getTokenById(user.getOperatorId());
+						String tokenInfo = Token.getTokenString(session);
+						Calendar c = Calendar.getInstance();
+						c.setTime(new Date()); // 设置当前日期
+						c.add(Calendar.MONTH, 1); // 日期分钟加1,Calendar.DATE(天),Calendar.HOUR(小时)
+						Date invalidTime = c.getTime(); // 结果
+						System.out.println(invalidTime);
+						if (null != t) {
+							t.setUpdateTime(new Date());
+							t.setInvalidTime(invalidTime);
+							t.setUserToken(tokenInfo);
+						} else {
+							t = new TokenTable();
+							t.setId(user.getOperatorId());
+							t.setUserId(user.getOperatorId());
+							t.setCreateTime(new Date());
+							t.setInvalidTime(invalidTime);
+							t.setUserToken(tokenInfo);
+						}
+						tokenService.save(t);
+						result.setSuccess(Constants.RESULT_SUCCESS);
 					} else {
-						t = new TokenTable();
-						t.setId(user.getOperatorId());
-						t.setUserId(user.getOperatorId());
-						t.setCreateTime(new Date());
-						t.setInvalidTime(invalidTime);
-						t.setUserToken(tokenInfo);
+						LOGGER.error("login error: {}", token + "," + password + "," + user.getOperatorPassword());
+						message = "重置失败，您输入的账号或密码不存在";
 					}
-					tokenService.save(t);
-					result.setSuccess(Constants.RESULT_SUCCESS);
 				} else {
-					LOGGER.error("login error: {}", userName+","+password+","+user.getOperatorPassword());
-					message = "重置失败，您输入的账号或密码不存在";
+					// 验证失败，返回失败消息
+					result.setSuccess(checkResult.getSuccess());
+					message = checkResult.getMessage();
 				}
 			} catch (UnknownAccountException ue) {
 				LOGGER.error("login error: {}", ue);
@@ -263,15 +274,15 @@ public class AppController {
 	}
 
 	/**
-	 * 设定安全的密码，通过md5，生成32位加密密码
-	 * 设定安全的密码，生成随机的salt并经过1024次 sha-1 hash
+	 * 设定安全的密码，通过md5，生成32位加密密码 设定安全的密码，生成随机的salt并经过1024次 sha-1 hash
 	 */
 	private void entryptPassword(SysOperator sysOperator) {
-//		byte[] salt = Digests.generateSalt(Constants.SALT_SIZE);
-//		sysOperator.setSalt(EncodeUtils.hexEncode(salt));
-//		byte[] hashPassword = Digests.sha1(sysOperator.getOperatorPassword().getBytes(), salt,
-//				Constants.HASH_INTERATIONS);
-//		sysOperator.setOperatorPassword(EncodeUtils.hexEncode(hashPassword));
+		// byte[] salt = Digests.generateSalt(Constants.SALT_SIZE);
+		// sysOperator.setSalt(EncodeUtils.hexEncode(salt));
+		// byte[] hashPassword =
+		// Digests.sha1(sysOperator.getOperatorPassword().getBytes(), salt,
+		// Constants.HASH_INTERATIONS);
+		// sysOperator.setOperatorPassword(EncodeUtils.hexEncode(hashPassword));
 		String password32 = null;
 		try {
 			password32 = Digests.getMd5Bit32(sysOperator.getOperatorPassword());
@@ -294,7 +305,6 @@ public class AppController {
 	 */
 	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	public void load(@RequestParam(value = "id", required = true) Long id,
-			@RequestParam(value = "code", required = true) String goodsCode,
 			@RequestParam(value = "token", defaultValue = "") String token,
 			@RequestParam(value = "latitude", required = true) String latitude,
 			@RequestParam(value = "longitude", required = true) String longitude, HttpServletRequest request,
@@ -304,7 +314,7 @@ public class AppController {
 		String message = "";
 		try {
 			Goods goods = goodsService.getGoodsById(id);
-			if (null != goods && goodsCode.equals(goods.getGoodsCode())) {
+			if (null != goods) {
 
 				Punchlog log = new Punchlog();
 				// [登录--非登录]用户反复读卡 读几次就加几次
@@ -368,29 +378,41 @@ public class AppController {
 	}
 
 	@RequestMapping(value = "/queryHistory", method = RequestMethod.POST)
-	public void findHistoryList(String userName, Integer pageNum, Integer pageSize, HttpServletResponse response) {
+	public void findHistoryList(@RequestParam(value = "token", required = true) String token,
+			@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+			@RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize, HttpServletResponse response) {
 		Pageable<Punchlog> pageable = null;
 		HistoryResult history = new HistoryResult();
 		try {
-			SysOperator o = this.systemService.getOperatorByLoginName(userName);
-			if (null != o) {
-				Punchlog log = new Punchlog();
-				log.setUserId(o.getOperatorId());
-				log.setPage(pageNum);
-				log.setRows(pageSize);
-				pageable = this.logService.findLogList(log);
-				history.setSuccess(Constants.RESULT_SUCCESS);
-				history.setCount(pageable.getTotal());
-				List<QueryHistory> list = new ArrayList<QueryHistory>();
-				for (Punchlog punch : pageable.getData()) {
-					QueryHistory q = new QueryHistory();
-					BeanUtils.copyProperties(punch, q);
-					list.add(q);
+			TokenTable t = tokenService.getTokenByToken(token);
+			// 验证token
+			ResultMessage checkResult = checkToken(token);
+			// 验证成功
+			if (Constants.RESULT_SUCCESS == checkResult.getSuccess()) {
+				SysOperator o = this.systemService.getOperatorById(t.getUserId());
+				if (null != o) {
+					Punchlog log = new Punchlog();
+					log.setUserId(o.getOperatorId());
+					log.setPage(pageNum);
+					log.setRows(pageSize);
+					pageable = this.logService.findLogList(log);
+					history.setSuccess(Constants.RESULT_SUCCESS);
+					history.setCount(pageable.getTotal());
+					List<QueryHistory> list = new ArrayList<QueryHistory>();
+					for (Punchlog punch : pageable.getData()) {
+						QueryHistory q = new QueryHistory();
+						BeanUtils.copyProperties(punch, q);
+						list.add(q);
+					}
+					history.setData(list);
+				} else {
+					history.setSuccess(Constants.RESULT_FAIL);
+					history.setMessage("未查询到该用户的查询记录");
 				}
-				history.setData(list);
 			} else {
-				history.setSuccess(Constants.RESULT_FAIL);
-				history.setMessage("未查询到该用户的查询记录");
+				// 验证失败，返回失败消息
+				history.setSuccess(checkResult.getSuccess());
+				history.setMessage(checkResult.getMessage());
 			}
 		} catch (Exception e) {
 			history.setSuccess(Constants.RESULT_FAIL);
@@ -403,6 +425,7 @@ public class AppController {
 
 	/**
 	 * 获取商品列表
+	 * 
 	 * @param token
 	 * @param pageIndex
 	 * @param pageSize
@@ -411,12 +434,11 @@ public class AppController {
 	 * @param model
 	 */
 	@RequestMapping(value = "/findGoodsList", method = RequestMethod.POST)
-	public void findGoodsList(
-			@RequestParam(value = "token", defaultValue = "") String token,
+	public void findGoodsList(@RequestParam(value = "token", defaultValue = "") String token,
 			@RequestParam(value = "pageIndex", defaultValue = "1") String pageIndex,
 			@RequestParam(value = "pageSize", defaultValue = "10") String pageSize,
-			@RequestParam(value = "noSendCard", defaultValue = "0") String noSendCard,
-			HttpServletResponse response, Model model) {
+			@RequestParam(value = "noSendCard", defaultValue = "0") String noSendCard, HttpServletResponse response,
+			Model model) {
 
 		GoodsResult result = new GoodsResult();
 		// 验证token
@@ -454,13 +476,13 @@ public class AppController {
 
 	/**
 	 * 发卡成功确认
+	 * 
 	 * @param token
 	 * @param number
 	 */
 	@RequestMapping(value = "/doGoodSend", method = RequestMethod.POST)
 	public void doGoodSend(@RequestParam(value = "token", defaultValue = "") String token,
-					@RequestParam(value = "number", required = true) String number,
-					HttpServletResponse response) {
+			@RequestParam(value = "number", required = true) String number, HttpServletResponse response) {
 		String message = "";
 		// 验证token
 		ResultMessage result = checkToken(token);
